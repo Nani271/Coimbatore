@@ -1,0 +1,73 @@
+Here's the Python implementation using the pymongo library to interact with MongoDB:
+import pymongo
+
+def create_collection(collection_name):
+    client = pymongo.MongoClient("mongodb://localhost:27019/")
+    db = client["mydatabase"]
+    collection = db[collection_name]
+    return collection
+
+def index_data(collection, exclude_column):
+    collection.create_index([(field, pymongo.ASCENDING) for field in collection.find_one().keys() if field != exclude_column])
+
+def search_by_column(collection, column_name, column_value):
+    results = collection.find({column_name: column_value})
+    for result in results:
+        print(result)
+
+def get_emp_count(collection):
+    count = collection.count_documents({})
+    print("Employee count:", count)
+
+def del_emp_by_id(collection, employee_id):
+    result = collection.delete_one({"employee_id": employee_id})
+    if result.deleted_count == 1:
+        print("Employee deleted successfully.")
+    else:
+        print("Employee not found.")
+
+def get_dep_facet(collection):
+    pipeline = [
+        {"$group": {"_id": "$Department", "count": {"$sum": 1}}}
+    ]
+    results = collection.aggregate(pipeline)
+    for result in results:
+        print(f"Department: {result['_id']}, Count: {result['count']}")     
+
+FUNCTION EXICUTIONS:
+1.Create Collections:
+name_collection = create_collection("Hash_YourName")
+phone_collection = create_collection("Hash_YourPhoneLastFourDigits") 
+
+2.Get Initial Employee Count:
+get_emp_count(name_collection)  
+3.Index Data:
+index_data(name_collection, "Department")
+index_data(phone_collection, "Gender") 
+
+4.Get Employee Count After Indexing: 
+get_emp_count(name_collection) 
+
+5.Delete an Employee: 
+del_emp_by_id(name_collection, "E02003") 
+
+6.Get Employee Count After Deletion: 
+get_emp_count(name_collection) 
+
+7.Search by Column: 
+search_by_column(name_collection, "Department", "IT")
+search_by_column(name_collection, "Gender", "Male")
+search_by_column(phone_collection, "Department", "IT") 
+
+8.Get Department Facets: 
+get_dep_facet(name_collection)
+get_dep_facet(phone_collection)
+
+
+
+
+
+
+
+
+
